@@ -14,7 +14,14 @@ debug_screen_bg_start_tab1 = pygame.image.load('assets/textures/dev_background/s
 debug_screen_bg_start_tab1_rect = debug_screen_bg_start_tab1.get_rect()
 
 debug_screen_bg_savefile_1 = pygame.image.load('assets/textures/dev_background/save_file_1.png')
-debug_screen_bg_savefile_1_rect = debug_screen_bg_savefile_1.get_rect()
+
+debug_screen_bg_savefile_2 = pygame.image.load('assets/textures/dev_background/save_file_2.png')
+
+debug_screen_bg_savefile_3 = pygame.image.load('assets/textures/dev_background/save_file_3.png')
+
+debug_screen_bg_arrow_s = pygame.image.load('assets/textures/dev_background/arrow_s.png')
+
+debug_screen_bg_arrow_u = pygame.image.load('assets/textures/dev_background/arrow_u.png')
 
 # ===================================================================================
 
@@ -57,3 +64,5 @@ debug_screen_bg_off_widget_u = pygame.image.load('assets/textures/dev_background
 # ===================================================================================
 
 debug_special = pygame.image.load('assets/textures/debug/special.png')
+
+debug_battle = pygame.image.load('assets/textures/dev_background/battle.png')

@@ -26,7 +26,7 @@ PLAYER_SPEED = 200  # This is the speed of the player
 PLAYER_IMG = 'd1.png'  # This is the sprite of the player used by default, when no direction is inputted
 PLAYER_HIT_RECT = pg.Rect(0, 0, 16, 20)  # The Hitbox of the player, used by some debug functions
 
-# Mob Settings
+# Hostile_Mob Settings
 MOB_IMG = ""
 
 # Bullet Settings

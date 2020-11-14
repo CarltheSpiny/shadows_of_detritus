@@ -96,38 +96,6 @@ class Player(pg.sprite.Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
 
-    def interact(self, dir):
-        # The algotithim: When the player is within a hitbox od an interactable object, draw a text box or a sprite
-        keys = pg.key.get_pressed()
-
-        waiting = False
-        if dir == 'x':
-            # Hits is a collison with a sprite in the game.walls group
-            hits = pg.sprite.spritecollide(self, self.game.interactable, False)
-            if hits:  # When the player hits a wall
-                if keys[pg.K_q] and not waiting:
-                    text_box_open = True
-                    print(text_box_open)
-                    print(waiting)
-                    while text_box_open:
-                        TextBox(self.game, 300, 500, text_box_open)
-                        if keys[pg.K_q]:
-                            text_box_open = False
-                else:
-                    pass
-        if dir == 'y':  # When the player hits a wall
-            hits = pg.sprite.spritecollide(self, self.game.interactable, False)
-            if hits:
-                if hits:  # When the player hits a wall
-                    if keys[pg.K_q] and not waiting:
-                        text_box_open = True
-                        while text_box_open:
-                            TextBox(self.game, 300, 500, text_box_open)
-                            if keys[pg.K_q]:
-                                text_box_open = False
-                    else:
-                        pass
-
     # Update everything that will be drawn to the screen(s)
     def update(self):
         # Start the keys for events
@@ -169,10 +137,10 @@ class Player(pg.sprite.Sprite):
             self.standing = True
             self.walkCount = 0
 
-        # If the player is not standing still
         if not self.standing and not self.booster:
             # Cycle through the frames of movement animation and rescale it to 200% of the sprite's original size
             if self.vel.x == PLAYER_SPEED:
+                # Must achieve a value of 2
                 self.image = pg.transform.scale(walkRight[self.walkCount // 6], (32, 40))
                 self.walkCount += 1
             elif self.vel.x == -PLAYER_SPEED:
@@ -204,6 +172,7 @@ class Player(pg.sprite.Sprite):
                 self.image = pg.transform.scale(dashLeft[self.walkCount // 6], (48, 48))
                 self.walkCount += 1
             elif self.vel.y == self.move:
+                # The calculation must result in 4
                 self.image = pg.transform.scale(dashDown[self.walkCount // 3], (64, 72))
                 self.walkCount += 1
             elif self.vel.y == -self.move:
@@ -211,6 +180,7 @@ class Player(pg.sprite.Sprite):
                 self.walkCount += 1
             # This fixes the issue of the upwards diagonals not working
             elif self.vel.y >= self.move_diag or self.vel.x >= self.move_diag:
+                # must equal 2
                 self.image = pg.transform.scale(dashUpRight[self.walkCount // 6], (48, 72))
                 self.walkCount += 1
             elif self.vel.y <= -self.move_diag or self.vel.x <= -self.move_diag:
@@ -224,20 +194,16 @@ class Player(pg.sprite.Sprite):
         self.pos += self.vel * self.game.dt
         # set the player x pos to the x in the above calculation
         self.rect.x = self.pos.x
-        # Set the dir in collide_with_walls to x
         self.collide_with_walls('x')
-        self.interact('x')
         self.dir = 'x'
         # set the player y pos to the y in the above calculation
         self.rect.y = self.pos.y
-        # Set the dir in collide_with_walls to y
         self.collide_with_walls('y')
-        self.interact('y')
         self.dir = 'y'
 
 
 # A monster, that collides with walls, cannot touch the player or else the game crashes
-class Mob(pg.sprite.Sprite):
+class Hostile_Mob(pg.sprite.Sprite):
     # The sprite used here is assumed to match the game's 32 by 32 resolution
     def __init__(self, game, x, y, w, h):
         self._layer = MOB_LAYER
@@ -257,6 +223,28 @@ class Mob(pg.sprite.Sprite):
         # If the direction of the sprite is x
         if dir == 'x':
             # Hits is a collison with a sprite in the game.walls group
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:  # When the player hits a wall
+                if self.vel.x > 0:
+                    self.pos.x = hits[0].rect.left - self.rect.width
+                if self.vel.x < 0:
+                    self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
+        if dir == 'y':  # When the player hits a wall
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vel.y > 0:
+                    self.pos.y = hits[0].rect.top - self.rect.height
+                if self.vel.y < 0:
+                    self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
+
+    def collide_with_player(self, dir):
+        # If the direction of the sprite is x
+        if dir == 'x':
+            # Hits is a collison with a sprite in the game.walls group
             hits = pg.sprite.spritecollide(self, self.game.player_group, False)
             if hits:  # When the player hits a wall
                 if self.vel.x > 0:
@@ -266,6 +254,7 @@ class Mob(pg.sprite.Sprite):
                 self.vel.x = 0
                 self.rect.x = self.pos.x
                 self.kill()
+                self.game.battle()
         if dir == 'y':  # When the player hits a wall
             hits = pg.sprite.spritecollide(self, self.game.player_group, False)
             if hits:
@@ -276,8 +265,49 @@ class Mob(pg.sprite.Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
                 self.kill()
+                self.game.battle()
 
-    def collide_with_player(self, dir):
+    def update(self):
+        if not self.game.player.standing:
+            self.vel = pg.math.Vector2(self.game.player.rect.x - self.rect.x,
+                                       self.game.player.rect.y - self.rect.y)
+            self.vel.normalize()
+
+            self.vel.scale_to_length(self.move)
+            # self.rect.move_ip(self.vel)
+
+            # Increase the speed as the mob moves around
+            if self.move < 500:
+                self.move += 1
+            else:
+                self.move = 100
+
+            self.pos += self.vel * self.game.dt
+            self.rect.x = self.pos.x
+            self.collide_with_walls('x')
+            self.collide_with_player('x')
+            self.rect.y = self.pos.y
+            self.collide_with_walls('y')
+            self.collide_with_player('y')
+
+
+class Fearful_Mob(pg.sprite.Sprite):
+    # The sprite used here is assumed to match the game's 32 by 32 resolution
+    def __init__(self, game, x, y, w, h):
+        self._layer = MOB_LAYER
+        self.groups = game.all_sprites, game.mobs
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.transform.scale(debug_enemy, (32, 32))  # pg.transform.scale(game.player_img, (32, 40))
+        self.rect = pg.Rect(x, y, w, h)
+        self.pos = vec(x, y)
+        self.vel = vec(0, 0)
+        # self.acc = vec(8, 0)
+        # self.rect.center = self.pos
+        self.move = 100
+        # self.player_position = (0, 0)
+
+    def collide_with_walls(self, dir):
         # If the direction of the sprite is x
         if dir == 'x':
             # Hits is a collison with a sprite in the game.walls group
@@ -299,23 +329,54 @@ class Mob(pg.sprite.Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
 
+    def collide_with_player(self, dir):
+        # If the direction of the sprite is x
+        if dir == 'x':
+            # Hits is a collison with a sprite in the game.walls group
+            hits = pg.sprite.spritecollide(self, self.game.player_group, False)
+            if hits:  # When the player hits a wall
+                if self.vel.x > 0:
+                    self.pos.x = hits[0].rect.left - self.rect.width
+                if self.vel.x < 0:
+                    self.pos.x = hits[0].rect.right
+                self.vel.x = 0
+                self.rect.x = self.pos.x
+                self.kill()
+                self.game.battle()
+        if dir == 'y':  # When the player hits a wall
+            hits = pg.sprite.spritecollide(self, self.game.player_group, False)
+            if hits:
+                if self.vel.y > 0:
+                    self.pos.y = hits[0].rect.top - self.rect.height
+                if self.vel.y < 0:
+                    self.pos.y = hits[0].rect.bottom
+                self.vel.y = 0
+                self.rect.y = self.pos.y
+                self.kill()
+                self.game.battle()
+
     def update(self):
         if not self.game.player.standing:
             self.vel = pg.math.Vector2(self.game.player.rect.x - self.rect.x,
                                        self.game.player.rect.y - self.rect.y)
             self.vel.normalize()
 
-            self.vel.scale_to_length(self.move)
+            self.vel.scale_to_length(-self.move)
             # self.rect.move_ip(self.vel)
 
             # Increase the speed as the mob moves around
-            self.move += 1
+            if self.move < 500:
+                self.move += 1
+            else:
+                self.move = 100
 
             self.pos += self.vel * self.game.dt
             self.rect.x = self.pos.x
             self.collide_with_walls('x')
+            self.collide_with_player('x')
             self.rect.y = self.pos.y
             self.collide_with_walls('y')
+            self.collide_with_player('y')
 
 
 # A bullet projectile
@@ -360,9 +421,9 @@ class Special(pg.sprite.Sprite):
 
 # A door or other entrance that will load a new area
 class TextBox(pg.sprite.Sprite):
-    def __init__(self, game, x, y, txt_open):
+    def __init__(self, game, x, y):
         # The sprite used here is assumed to match the game's 32 by 32 resolution
-        self.groups = game.all_sprites
+        self.groups = game.text_boxes
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = debug_screen_bg_button
@@ -373,7 +434,6 @@ class TextBox(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x
         self.rect.y = y
-        self.state = txt_open
 
     def update(self):
         keys = pg.key.get_pressed()

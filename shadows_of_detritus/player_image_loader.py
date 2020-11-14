@@ -5,6 +5,15 @@ pygame.init()
 walkRight = [pygame.image.load('assets/textures/dev_player/r1.png'),
              pygame.image.load('assets/textures/dev_player/r2.png')]
 
+"""[pygame.image.load('assets/textures/player/kyle/kyle_u1.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u2.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u3.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u4.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u5.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u6.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u8.png'),
+             pygame.image.load('assets/textures/player/kyle/kyle_u9.png')]"""
+
 walkLeft = [pygame.image.load('assets/textures/dev_player/l1.png'),
             pygame.image.load('assets/textures/dev_player/l2.png')]
 
