@@ -5,7 +5,7 @@ from menu_widget_loader import *
 from player_image_loader import *
 from mob_image_loader import *
 from item_image_loader import *
-from text_renderer import draw_text
+import pytmx
 
 # Use pygame's built in vector movement to a variable for future calculations
 vec = pg.math.Vector2
@@ -104,17 +104,14 @@ class Player(pg.sprite.Sprite):
             hits = pg.sprite.spritecollide(self, self.game.interactable, False)
             if hits:  # When the player hits a wall
                 self.game.text_open = True
-                print("We got here!")
                 self.game.inter_obj_id = 1
 
             else:
                 self.game.text_open = False
                 self.game.inter_obj_id = 0
         if dir == 'y':  # When the player hits a wall
-            print("In theory, a textbox is open")
             hits = pg.sprite.spritecollide(self, self.game.interactable, False)
             if hits:  # When the player hits a wall
-                print("You touched it!")
                 self.game.text_open = True
                 self.game.inter_obj_id = 1
                 print(self.game.text_open)
@@ -236,10 +233,11 @@ class Hostile_Mob(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.mobs
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.transform.scale(debug_enemy, (32, 32))  # pg.transform.scale(game.player_img, (32, 40))
+        self.image = pg.transform.scale(mushroom, (32, 32))  # pg.transform.scale(game.player_img, (32, 40))
         self.rect = pg.Rect(x, y, w, h)
         self.pos = vec(x, y)
         self.vel = vec(0, 0)
+        self.walkCount = 0
         # self.acc = vec(8, 0)
         # self.rect.center = self.pos
         self.move = 100
@@ -305,8 +303,18 @@ class Hostile_Mob(pg.sprite.Sprite):
             # Increase the speed as the mob moves around
             if self.move < 500:
                 self.move += 1
+
+            if self.walkCount + 1 >= 8:
+                self.walkCount = 0
+
+            if self.vel == -self.move:
+                self.image = pg.transform.scale(mushroom_running[self.walkCount // 4], (32, 40))
+                self.walkCount += 1
+            if self.vel == +self.move:
+                self.image = pg.transform.scale(mushroom_running[self.walkCount // 4], (32, 40))
+                self.walkCount += 1
             else:
-                self.move = 100
+                self.image = pg.transform.scale(mushroom, (32, 40))
 
             self.pos += self.vel * self.game.dt
             self.rect.x = self.pos.x
@@ -324,7 +332,7 @@ class Fearful_Mob(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.mobs
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.transform.scale(debug_enemy, (32, 32))  # pg.transform.scale(game.player_img, (32, 40))
+        self.image = pg.transform.scale(mushroom, (32, 32))  # pg.transform.scale(game.player_img, (32, 40))
         self.rect = pg.Rect(x, y, w, h)
         self.pos = vec(x, y)
         self.vel = vec(0, 0)
@@ -405,7 +413,7 @@ class Fearful_Mob(pg.sprite.Sprite):
             self.collide_with_player('y')
 
 
-# A bullet projectile
+# An unused bullet projectile
 class Bullet(pg.sprite.Sprite):
     def __int__(self, game, pos, dir):
         self.groups = game.all_sprites, game.bullets
@@ -418,6 +426,7 @@ class Bullet(pg.sprite.Sprite):
         self.spawn_time = pg.time.get_ticks()
 
 
+# The generic wall for all collisions
 class Obstacle(pg.sprite.Sprite):
     # The sprite used here is assumed to match the game's 32 by 32 resolution
     def __init__(self, game, x, y, w, h):
