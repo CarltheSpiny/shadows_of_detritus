@@ -106,12 +106,11 @@ class Game:
         self.camera = Camera(self.map.width, self.map.height)
         self.paused = False
         self.text_open = False
+        self.inter_obj_id = 1
 
     # game loop - set self.playing = False to end the game
     def run(self):
         self.playing = True
-        self.text_open = True
-        # Use this to start the game in debug mode
         self.debug_mode = True
         while self.playing:
             # Set the dt value, used for entity movement, to the fps / 1000
@@ -120,7 +119,7 @@ class Game:
             # Do all the functions nested in these functions
 
             self.events()
-            if not self.paused or self.text_open:
+            if not self.paused:
                 self.update()
 
             self.draw()
@@ -158,37 +157,13 @@ class Game:
         for sprite in self.all_sprites:
             self.main_layer.blit(sprite.image, self.camera.apply(sprite))
 
-        if self.paused:
-            self.draw_text("Paused", self.font, 105, RED, WIDTH / 2, HEIGHT / 2, align="center")
+        if self.text_open:
+            self.paused = True
+            self.main_layer.blit(debug_dialouge, (32, 577))
+            if self.inter_obj_id == 1:
+                self.draw_text("A sign, hoping that someday it will say more than just a few words",
+                               self.font, 50, WHITE, 930, 657, align="se")
 
-        """if self.text_open:
-            # The algotithim: When the player is within a hitbox od an interactable object, draw a text box or a
-            # sprite
-            keys = pg.key.get_pressed()
-
-            if self.player.dir == 'x':
-                # Hits is a collison with a sprite in the game.walls group
-                hits = pg.sprite.spritecollide(self, self.interactable, False)
-                if hits:  # When the player hits a wall
-                    if keys[pg.K_q]:
-                        self.text_open = True
-                        print("We got here!")
-                        self.main_layer.blit(debug_screen_bg_savefile_3, (84, 650))
-                        self.draw_text("A sign", self.font, 105, WHITE, 95, 650, align="se")
-                    if keys[pg.K_q] and self.text_open is True:
-                        self.text_open = False
-            if self.player.dir == 'y':  # When the player hits a wall
-                hits = pg.sprite.spritecollide(self, self.interactable, False)
-                if hits:
-                    if hits:  # When the player hits a wall
-                        if keys[pg.K_q]:
-                            self.text_open = True
-                            self.main_layer.blit(debug_screen_bg_savefile_3, (84, 650))
-                            self.draw_text("A sign", self.font, 105, WHITE, 95, 650, align="se")
-                        if keys[pg.K_q] and self.text_open is True:
-                            self.text_open = False
-            self.main_layer.blit(debug_screen_bg_savefile_3, (84, 650))
-            self.draw_text("A sign", self.font, 105, WHITE, 95, 650, align="se")"""
         pg.display.flip()
 
     # Catch all events here
@@ -203,7 +178,9 @@ class Game:
                     self.paused = not self.paused
                 if event.key == pg.K_q:
                     self.text_open = not self.text_open
-                    self.paused = not self.paused
+                    self.player.interact(self.player.dir)
+                if event.key == pg.K_RETURN:
+                    self.text_open = not self.text_open
 
     def show_start_screen_1(self):
         self.main_layer.fill(BLACK)

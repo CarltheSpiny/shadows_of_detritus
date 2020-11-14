@@ -65,4 +65,6 @@ debug_screen_bg_off_widget_u = pygame.image.load('assets/textures/dev_background
 
 debug_special = pygame.image.load('assets/textures/debug/special.png')
 
+debug_dialouge = pygame.image.load('assets/textures/dev_background/shadows_dialouge_box.png')
+
 debug_battle = pygame.image.load('assets/textures/dev_background/battle.png')

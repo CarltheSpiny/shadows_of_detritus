@@ -96,6 +96,32 @@ class Player(pg.sprite.Sprite):
                 self.vel.y = 0
                 self.rect.y = self.pos.y
 
+    def interact(self, dir):
+        # The algotithim: When the player is within a hitbox od an interactable object, draw a text box or a sprite
+        keys = pg.key.get_pressed()
+
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.interactable, False)
+            if hits:  # When the player hits a wall
+                self.game.text_open = True
+                print("We got here!")
+                self.game.inter_obj_id = 1
+
+            else:
+                self.game.text_open = False
+                self.game.inter_obj_id = 0
+        if dir == 'y':  # When the player hits a wall
+            print("In theory, a textbox is open")
+            hits = pg.sprite.spritecollide(self, self.game.interactable, False)
+            if hits:  # When the player hits a wall
+                print("You touched it!")
+                self.game.text_open = True
+                self.game.inter_obj_id = 1
+                print(self.game.text_open)
+            else:
+                self.game.text_open = False
+                self.game.inter_obj_id = 0
+
     # Update everything that will be drawn to the screen(s)
     def update(self):
         # Start the keys for events
