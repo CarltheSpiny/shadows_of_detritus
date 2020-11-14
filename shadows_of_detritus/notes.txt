@@ -1,8 +1,0 @@
-Logic to research:
-
-Loading Screens
-Smooth transition screens
-paralax scrolling?
-Timed events
-
-Improve Loading times, previous exp!
